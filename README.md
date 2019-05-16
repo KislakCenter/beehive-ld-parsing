@@ -12,10 +12,24 @@ Daniel Pastorius' [Bee Hive](beehive).
 Acquire a copy of the Bee Hive annotations in N-quads format.
 
 Install the script and set up Fuseki with the annotations data as described
-below. Run the script:
+below. 
+
+CSV is written to standard output:
 
 ```bash
-$ ruby bin/parse_annotations.rb path/to/beehive-data.nq
+$ bundle exec ruby bin/parse_annotations.rb > output.csv
+```
+
+```csv
+volume,image_number,head,entry,topic,xref,see,index,item,unparsed,line,selection,full_image,annotation_uri
+...
+Volume 2,21,,Jesting,Jesting,buffoonry|1119 [Jest],,jesting,#item-8fd26eddf,,Entry: Jesting|Topic: Jesting|XRef: buffoonry|XRef: 1119 [Jest]|Index: jesting|#item-8fd26eddf|,"https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/360,256,3011,363/full/0/default.jpg",https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/full/full/0/default.jpg,http://dev.llgc.org.uk/annotation/1508858832957
+Volume 2,21,,Jesuite,Jesuite,1292 [Jesuites],,Jesuite,#item-c421e7050,,Entry: Jesuite|Topic: Jesuite|XRef: 1292 [Jesuites]|Index: Jesuite|#item-c421e7050,"https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/350,619,3035,318/full/0/default.jpg",https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/full/full/0/default.jpg,http://dev.llgc.org.uk/annotation/1508859070768
+Volume 3,25,,,,,,,,"","","https://stacks.stanford.edu/image/iiif/gw497tq8651%2F1607_0968/152,2097,448,148/full/0/default.jpg",https://stacks.stanford.edu/image/iiif/gw497tq8651%2F1607_0968/full/full/0/default.jpg,http://dev.llgc.org.uk/annotation/1508859115466
+Volume 3,25,,,,,,,,"","","https://stacks.stanford.edu/image/iiif/gw497tq8651%2F1607_0968/149,2254,480,113/full/0/default.jpg",https://stacks.stanford.edu/image/iiif/gw497tq8651%2F1607_0968/full/full/0/default.jpg,http://dev.llgc.org.uk/annotation/1508859120407
+Volume 2,21,,Jesus,Jesus,Christ|Saviour,,Jesus,#item-fc54ff4b7,,Entry: Jesus|Topic: Jesus|XRef: Christ|XRef: Saviour|Index: Jesus|#item-fc54ff4b7,"https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/359,929,2974,442/full/0/default.jpg",https://stacks.stanford.edu/image/iiif/fm855tg5659%2F1607_0488/full/full/0/default.jpg,http://dev.llgc.org.uk/annotation/1508859135558
+...
+
 ```
 
 # Install
