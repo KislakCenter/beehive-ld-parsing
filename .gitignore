@@ -1,0 +1,4 @@
+jena
+run/
+*.csv
+data/*.nq
