@@ -68,8 +68,9 @@ the `nq` file data. The script will not work if you load the n-quads data more
 than once to the same database.
 
 ```bash
-$ mdkir jena
-$ tdbloader --loc=jena data/beehive-data-2019-04-12.nq $
+$ rm -rf jena
+# the following creates the `jena` folder
+$ tdbloader --loc=jena data/beehive-data-2019-04-12.nq
 ``` 
 
 Now start Fuseki using the provided `fuseki_config.ttl`:
