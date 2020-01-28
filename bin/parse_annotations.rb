@@ -84,7 +84,7 @@ def find_canvas_data canvas_url
   CANVAS_DB[canvas_url]
 end
 
-HEADERS = %i{ volume image_number head entry topic xref see index item unparsed line selection full_image annotation_uri }
+HEADERS = %i{ volume image_number head entry topic page add xref see index item unparsed line selection full_image annotation_uri }
 
 ##
 # Parse the content of an annotation
@@ -105,6 +105,10 @@ def parse_content content
         (row[:entry] ||= []) << parts.last
       when /^Topic/i
         (row[:topic] ||= []) << parts.last
+      when /^Page/i
+        (row[:page] ||= []) << parts.last
+      when /^Add/i
+        (row[:add] ||= []) << parts.last
       when /^Xref/i
         (row[:xref]  ||= []) << parts.last
       when /^Index/
