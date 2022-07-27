@@ -97,31 +97,32 @@ def parse_content content
   row[:line] = [content]
   if content =~ /Entry:|Head:/i
     content.split(/\|/).map(&:strip).each do |bit|
-      parts = bit.split(/:\s+/, 2)
-      case parts.first
+      head, val = bit.split(/:\s*/, 2)
+      val = val.to_s.strip
+      case head
       when /^Head/i
-        (row[:head] ||= []) << parts.last
+        (row[:head] ||= []) << val
       when /^Entry/i
-        (row[:entry] ||= []) << parts.last
+        (row[:entry] ||= []) << val
       when /^Topic/i
-        (row[:topic] ||= []) << parts.last
+        (row[:topic] ||= []) << val
       when /^Page/i
-        (row[:page] ||= []) << parts.last
+        (row[:page] ||= []) << val
       when /^Add/i
-        (row[:add] ||= []) << parts.last
+        (row[:add] ||= []) << val
       when /^Xref/i
-        (row[:xref]  ||= []) << parts.last
+        (row[:xref] ||= []) << val
       when /^Index/
-        (row[:index] ||= []) << parts.last
+        (row[:index] ||= []) << val
       when /^See$/i
-        (row[:see] ||=[]) << parts.last
+        (row[:see] ||= []) << val
       when /^See\s/i
         # binding.pry if content =~ /brave/
-        (row[:see] ||=[]) << parts.first.split(/\s+/, 2).last
+        (row[:see] ||=[]) << head.split(/\s+/, 2).last.to_s.strip
       when /^#item/i
-        (row[:item] ||= []) << parts.first
+        (row[:item]   ||= []) << head.to_s.strip
       else
-        (row[:unparsed] ||= []) << parts.join(' ')
+        (row[:unparsed] ||= []) << [head, val].join(' ').strip
       end
     end
   else
