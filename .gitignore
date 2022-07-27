@@ -2,3 +2,8 @@ jena
 run/
 *.csv
 data/*.nq
+*.ttl
+*.old
+*.bak
+test.spql
+output.numbers
