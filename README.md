@@ -9,7 +9,8 @@ Daniel Pastorius' [Bee Hive](beehive).
 
 # Usage
 
-Acquire a copy of the Bee Hive annotations in N-quads format.
+Update `data/beehive-data.nq` with the latest version of Beehive SAS exported
+N-quads data.
 
 Install the script and set up Fuseki with the annotations data as described
 below. 
@@ -70,7 +71,7 @@ than once to the same database.
 ```bash
 $ rm -rf jena
 # the following creates the `jena` folder
-$ tdbloader --loc=jena data/beehive-data-2019-04-12.nq
+$ tdbloader --loc=jena data/beehive-data.nq
 ``` 
 
 Now start Fuseki using the provided `fuseki_config.ttl`:
