@@ -39,12 +39,6 @@ manifests = %w{ https://purl.stanford.edu/ps974xt6740/iiif/manifest.json
   https://purl.stanford.edu/fm855tg5659/iiif/manifest.json
   https://purl.stanford.edu/gw497tq8651/iiif/manifest.json }
 
-# manifests = %w{
-#     data/fm855tg5659_manifest.json
-#     data/gw497tq8651_manifest.json
-#     data/ps974xt6740_manifest.json
-# }.map { |m| File.join __dir__, '..', m }
-
 ##
 # Class to represent the book title, canvas and image URL,
 # image number, value.
@@ -68,7 +62,17 @@ end
 
 CANVAS_DB  = {}
 manifests.each do |manifest|
-  json    = URI.open(manifest).read.split($/).map { |l| l.gsub /cocina-fileSet-[^-]+-/, '' }.join $\
+  json    = URI.open(manifest).read.split($/).map { |line|
+    # #gsub => newer stanford manifests change the canvas IDs, which is very
+    # bad. Fix these by removing string like.
+    #
+    # Bad URL: `https://purl.stanford.edu/ps974xt6740/iiif/canvas/cocina-fileSet-ps974xt6740-ps974xt6740_1`
+    #
+    # Good URL: `https://purl.stanford.edu/ps974xt6740/iiif/canvas/ps974xt6740_1`
+    #
+    # Remove: `cocina-fileSet-ps974xt6740-` and similar
+    line.gsub /cocina-fileSet-[^-]+-/, ''
+  }.join $\
   # get the volume number from the title
   title   = JsonPath.on(json, 'metadata[?(@.label == "Title")].value').first
 
@@ -147,14 +151,13 @@ oa      = RDF::Vocabulary.new 'http://www.w3.org/ns/oa#'
 
 sparql  = SPARQL::Client.new('http://localhost:3030/beehive')
 
-=begin
-# This is the updated query to accommodate older and newer
-# Annotations exported from SAS
+# Updated query to accommodate older and newer annotations exported from SAS
 # The difference is that the newer annotations have selector type == oa:Choice
-# as opposed to oa:FragmentSelector
-# And the newer selectors link to coordinates vi oa:default/rdf:value
-# as opposed to a simple rdf:value as before
+# as opposed to oa:FragmentSelector.
 #
+# The newer selectors also link to coordinates via oa:default/rdf:value as
+# opposed to a simple rdf:value as before. This query works with either path.
+query = <<EOF
 PREFIX re: <http://www.w3.org/2000/10/swap/reason#>
 PREFIX oh: <http://semweb.mmlab.be/ns/oh#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -171,28 +174,17 @@ SELECT ?annotation ?content ?canvas ?coordinates WHERE {
           oa:hasSelector ?selector .
   ?selector a ?selector_type ;
           oa:default*/rdf:value ?coordinates .
-  FILTER(CONTAINS(?content, "4877"))
 }
-=end
+EOF
 
-query = sparql.select(:annotation, :content, :canvas, :coordinates).
-  where(
-    [:annotation, RDF.type,       oa[:Annotation]],
-    [:annotation, oa.hasBody,     :body],
-    [:annotation, oa.hasTarget,   :target],
-    [:body,       content.chars,  :content],
-    [:target,     oa.hasSource,   :canvas],
-    [:target,     oa.hasSelector, :selector],
-    [:selector,   RDF.type,       oa[:FragmentSelector]],
-    [:selector,   RDF.value,      :coordinates]
-  )
+result = sparql.query(query)
 
 ##
 # Print CSV to standard out
 CSV headers: true do |csv|
   csv << HEADERS
   csv << { volume: 'Volume 0', image_number: 0, unparsed: 'Force Google Sheets to read CSV as UTF-8: büngt; if UTF-8 occurs too late, CSV will be read as ASCII' }
-  query.each_solution do |solution|
+  result.each_solution do |solution|
     canvas_url            = solution[:canvas].value
     canvas_data           = find_canvas_data canvas_url
     unless canvas_data
