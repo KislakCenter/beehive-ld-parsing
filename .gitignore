@@ -1,6 +1,6 @@
 jena
 run/
-*.csv
+/*.csv
 data/*.nq
 !data/beehive-data.nq
 *.ttl
@@ -8,3 +8,4 @@ data/*.nq
 *.bak
 test.spql
 output.numbers
+.env
