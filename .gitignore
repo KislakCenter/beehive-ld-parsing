@@ -1,6 +1,6 @@
 jena
 run/
-*.csv
+/*.csv
 data/*.nq
 !data/beehive-data.nq
 *.ttl
