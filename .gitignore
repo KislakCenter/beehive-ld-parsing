@@ -8,3 +8,4 @@ data/*.nq
 *.bak
 test.spql
 output.numbers
+.env
