@@ -39,6 +39,12 @@ manifests = %w{ https://purl.stanford.edu/ps974xt6740/iiif/manifest.json
   https://purl.stanford.edu/fm855tg5659/iiif/manifest.json
   https://purl.stanford.edu/gw497tq8651/iiif/manifest.json }
 
+# manifests = %w{
+#     data/fm855tg5659_manifest.json
+#     data/gw497tq8651_manifest.json
+#     data/ps974xt6740_manifest.json
+# }.map { |m| File.join __dir__, '..', m }
+
 ##
 # Class to represent the book title, canvas and image URL,
 # image number, value.
@@ -62,7 +68,7 @@ end
 
 CANVAS_DB  = {}
 manifests.each do |manifest|
-  json    = open(manifest).read
+  json    = URI.open(manifest).read.split($/).map { |l| l.gsub /cocina-fileSet-[^-]+-/, '' }.join $\
   # get the volume number from the title
   title   = JsonPath.on(json, 'metadata[?(@.label == "Title")].value').first
 
@@ -138,7 +144,37 @@ end
 # selector coordinates
 content = RDF::Vocabulary.new 'http://www.w3.org/2011/content#'
 oa      = RDF::Vocabulary.new 'http://www.w3.org/ns/oa#'
+
 sparql  = SPARQL::Client.new('http://localhost:3030/beehive')
+
+=begin
+# This is the updated query to accommodate older and newer
+# Annotations exported from SAS
+# The difference is that the newer annotations have selector type == oa:Choice
+# as opposed to oa:FragmentSelector
+# And the newer selectors link to coordinates vi oa:default/rdf:value
+# as opposed to a simple rdf:value as before
+#
+PREFIX re: <http://www.w3.org/2000/10/swap/reason#>
+PREFIX oh: <http://semweb.mmlab.be/ns/oh#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX oa: <http://www.w3.org/ns/oa#>
+PREFIX content: <http://www.w3.org/2011/content#>
+SELECT ?annotation ?content ?canvas ?coordinates WHERE {
+  VALUES (?selector_type) { (oa:FragmentSelector) (oa:Choice) }
+  ?annotation a oa:Annotation;
+              oa:hasBody ?body ;
+              oa:hasTarget ?target .
+  ?body content:chars ?content .
+  ?target oa:hasSource ?canvas ;
+          oa:hasSelector ?selector .
+  ?selector a ?selector_type ;
+          oa:default*/rdf:value ?coordinates .
+  FILTER(CONTAINS(?content, "4877"))
+}
+=end
+
 query = sparql.select(:annotation, :content, :canvas, :coordinates).
   where(
     [:annotation, RDF.type,       oa[:Annotation]],
@@ -159,7 +195,10 @@ CSV headers: true do |csv|
   query.each_solution do |solution|
     canvas_url            = solution[:canvas].value
     canvas_data           = find_canvas_data canvas_url
-
+    unless canvas_data
+      $stderr.puts "WARNING: Canvas not found #{canvas_url}"
+      next
+    end
     row                   = parse_content solution[:content].value
     coordinates           = solution[:coordinates] && solution[:coordinates].value.split(/=/).last
     row[:volume]          = canvas_data.volume
