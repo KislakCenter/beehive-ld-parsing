@@ -51,8 +51,8 @@ $ bundle install
 Set the environment to point to where Fuseki and Jena live on your system.
 
 ```bash
-export FUSEKI_HOME=$HOME/dev/Java/apache-jena-fuseki-3.11.0
-export JENA_HOME=$HOME/dev/Java/apache-jena-3.11.0
+export FUSEKI_HOME=$HOME/Java/apache-jena-fuseki-4.8.0
+export JENA_HOME=$HOME/Java/apache-jena-4.8.0
 
 PATH=$PATH:$FUSEKI_HOME
 PATH=$PATH:$FUSEKI_HOME/bin
