@@ -2,7 +2,7 @@ jena
 run/
 /*.csv
 data/*.nq
-!data/beehive-data.nq
+!data/beehive-annotations.nq
 *.ttl
 *.old
 *.bak
