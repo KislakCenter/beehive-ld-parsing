@@ -9,3 +9,4 @@ data/*.nq
 test.spql
 output.numbers
 .env
+/tmp

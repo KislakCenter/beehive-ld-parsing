@@ -1,10 +1,21 @@
 # Beehive Script
 
-Scripts to extract and parse [SimpleAnnotationServer][SAS] annotations from 
-Daniel Pastorius' [Bee Hive](beehive).
+
+
+These are scripts to extract and parse annotations of University of Pennsylvania Ms. Codex 726, Daniel Pastorius' "[Bee Hive](beehive)" as a single CSV file. These annotations were generated using Glen Robson's [SimpleAnnotationServer][SAS] between 2016 and 2023.
+
+For more information on this project and to see its results, visit the [Digital Beehive site][digital-beehive]. For the annotation data and IIIF manifests, see the [Beehive data repository][beehive-data] on GitHub.
+
+The CSV output by this script is used to generate the data and pages used to build the Digital Beehive Jekyll/Wax site, which is hosted on GitHub Pages. The [Digital Beehive website code][digital-beehive-code] is also hosted on GitHub. There is a separate repository for the website generation scripts, [beehive-annotation-scripts][beehive-annotation-scripts]
+
 
 [SAS]: https://github.com/glenrobson/SimpleAnnotationServer "SimpleAnnotationServer on Github"
-[beehive]: http://dla.library.upenn.edu/dla/medren/pageturn.html?id=MEDREN_9924875473503681 "Bee Hive on Penn in Hand"
+[beehive]: https://franklin.library.upenn.edu/catalog/FRANKLIN_9924875473503681 "The Bee Hive in the Penn Library catalog"
+[digital-beehive]: http://kislakcenter.github.io/digital-beehive/ "The Digital Beehive website"
+[beehive-data]: https://github.com/KislakCenter/beehive-data "Beehive data repository on GitHub"
+[digital-beehive-code]: https://github.com/KislakCenter/digital-beehive "Digital Beehive Jekyll/Wax code"
+[beehive-annotation-scripts]: https://github.com/KislakCenter/beehive-annotation-scripts "Digital Beehive generation scripts"
+
 
 
 # Usage
@@ -33,51 +44,97 @@ Volume 2,21,,Jesus,Jesus,Christ|Saviour,,Jesus,#item-fc54ff4b7,,Entry: Jesus|Top
 
 ```
 
+
+
 # Install
 
-Run bundler:
+
+## Requirements
+
+- Ruby v2.7.6
+- Bundler gem
+- [Apache Jena and Jena/Fuseki][apache-jena]
+
+[apache-jena]: https://jena.apache.org/download/ "Apache Jena site"
+
+## Download this repository and install required gems
+
+```
+git clone https://github.com/KislakCenter/beehive-ld-parsing.git
+cd beehive-ld-parsing
+bundle install
+```
+
+### Install and configure Apache Jena and Jena/Fuseki
+
+Download and unzip/untar Apache Jena and Jena/Fuseki on your system.
+
+Create a copy of `sample.env` and name it `.env`.
+
+```
+cp sample.env .env
+```
+
+Edit `.env` to match your Apache Jena and Jena/Fuseki installations
+
+
+### Import the latest Beehive annotations into Jena
+
+Get the latest Beehive annotations in N-Quads format from the [Beehive Data repository][beehive-data].
+
+
+Your can use the script `import_annotations.sh`:
+
+```
+./import_annotations.sh path/to/beehive-annotations.nq
+```
+
+Or do it yourself manually:
+
 
 ```bash
-$ bundle install
+source .env # configure Jena/Fuseik environment
+rm -rf jena # remove existing store
+# the following creates the `jena` folder
+tdbloader --loc=jena path/to/beehive-annotations.nq
 ```
 
 ### Setup Fuseki with the annotation data
 
-[Get](get-fuseki) and run Fuseki as a [standalone server](fuseki-standalone):
+The following runs Fuseki as a standalone server. The annotation parsing script talks to the Fuseki SPARQL endpoint to extract the annotations.
 
-[get-fuseki]: https://jena.apache.org/documentation/fuseki2/#download-fuseki
-[fuseki-standalone]: https://jena.apache.org/documentation/fuseki2/fuseki-run.html#fuseki-standalone-server
+For more information on running standalone Fuseki see the [Fuseki page][fuseki-standalone].
 
-Set the environment to point to where Fuseki and Jena live on your system.
+[fuseki-standalone]: https://jena.apache.org/documentation/fuseki2/fuseki-run.html#fuseki-standalone-server "Fuseki standalone server instructions"
 
-```bash
-export FUSEKI_HOME=$HOME/Java/apache-jena-fuseki-4.8.0
-export JENA_HOME=$HOME/Java/apache-jena-4.8.0
 
-PATH=$PATH:$FUSEKI_HOME
-PATH=$PATH:$FUSEKI_HOME/bin
-PATH=$PATH:$JENA_HOME/bin
+Run the script `start_fuseki.sh`:
 
-export PATH
+```
+./start_fuseki.sh
 ```
 
-Create directory called `jena`, download a copy of the Bee Hive annotations (you
-have to ask Doug Emery for this) and load it into Jena.
+You should see something like the following
 
-NB If you already have a folder called `jena`, delete its contents and reload
-the `nq` file data. The script will not work if you load the n-quads data more
-than once to the same database.
+```
+16:10:17 INFO  Server          :: Apache Jena Fuseki 4.8.0
+16:10:17 INFO  Config          :: FUSEKI_HOME=/Users/username/Java/apache-jena-fuseki-4.8.0
+16:10:17 INFO  Config          :: FUSEKI_BASE=/Users/username/code/beehive-ld-parsing/run
+16:10:17 INFO  Config          :: Shiro file: file:///Users/username/code/beehive-ld-parsing/run/shiro.ini
+16:10:18 INFO  Server          :: Path = /beehive
+16:10:18 INFO  Server          ::   Memory: 4.0 GiB
+16:10:18 INFO  Server          ::   Java:   20.0.1
+16:10:18 INFO  Server          ::   OS:     Mac OS X 13.4.1 aarch64
+16:10:18 INFO  Server          ::   PID:    34006
+16:10:18 INFO  Server          :: Started 2023/06/30 16:10:18 EDT on port 3030
+```
+
+If you want to do it manually, you can do this:
+
 
 ```bash
-$ rm -rf jena
-# the following creates the `jena` folder
-$ tdbloader --loc=jena data/beehive-data.nq
-``` 
-
-Now start Fuseki using the provided `fuseki_config.ttl`:
-
-```bash
-$ fuseki-server --config=fuseki_config.ttl
+source .env
+fuseki-server --config=fuseki_config.ttl
 ```
 
 # Annotation formats
